@@ -1,0 +1,14 @@
+# Defina o comportamento padrão para normalizar as terminações de linha para LF.
+* text=auto eol=lf
+
+# Arquivos que devem manter CRLF (comum para scripts do Windows).
+*.bat      eol=crlf
+*.cmd      eol=crlf
+
+# Marque arquivos binários para que o Git não tente convertê-los.
+*.png      binary
+*.jpg      binary
+*.jpeg     binary
+*.gif      binary
+*.ico      binary
+*.pdf      binary
