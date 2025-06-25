@@ -24,6 +24,7 @@
                     <x-nav-link :href="route('investigations.index')" :active="request()->routeIs('investigations.*')">
                         {{ __('Investigações') }}
                     </x-nav-link>
+
                     {{-- Este link só aparece se o utilizador passar no gate 'is-admin' --}}
                     @can('is-admin')
                         <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
@@ -33,6 +34,7 @@
                 </div>
             </div>
 
+            <!-- Formulário de Busca -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <form action="{{ route('search.index') }}" method="GET">
                     <input type="text" name="q" placeholder="Buscar..." class="rounded-md shadow-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600">
