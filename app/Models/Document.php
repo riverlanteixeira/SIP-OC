@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany; // Adicionado
 
-class Organization extends Model
+class Investigation extends Model
 {
     use HasFactory;
 
@@ -15,9 +15,9 @@ class Organization extends Model
      * Os atributos que podem ser atribuídos em massa.
      */
     protected $fillable = [
-        'name',
-        'area_of_operation',
+        'case_name',
         'description',
+        'status',
     ];
 
     /**
@@ -25,19 +25,27 @@ class Organization extends Model
      */
     public function people(): BelongsToMany
     {
-        return $this->belongsToMany(Person::class, 'organization_person');
+        return $this->belongsToMany(Person::class, 'investigation_person');
     }
 
     /**
-     * Define o relacionamento muitos-para-muitos com Investigações.
+     * Define o relacionamento muitos-para-muitos com Organizações.
      */
-    public function investigations(): BelongsToMany
+    public function organizations(): BelongsToMany
     {
-        return $this->belongsToMany(Investigation::class, 'investigation_organization');
+        return $this->belongsToMany(Organization::class, 'investigation_organization');
     }
 
     /**
-     * Obtém todos os documentos para a organização.
+     * Define o relacionamento muitos-para-muitos com Utilizadores (Responsáveis).
+     */
+    public function assignedUsers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'investigation_user');
+    }
+
+    /**
+     * Obtém todos os documentos para a investigação.
      */
     public function documents(): MorphMany
     {

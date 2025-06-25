@@ -34,7 +34,7 @@
                                 <tr>
                                     <td class="whitespace-nowrap px-4 py-2 font-medium text-gray-900 dark:text-white">{{ $organization->name }}</td>
                                     <td class="whitespace-nowrap px-4 py-2 text-gray-700 dark:text-gray-200">{{ $organization->area_of_operation }}</td>
-                                    <td class="whitespace-nowrap px-4 py-2 text-right">
+                                    <td class="whitespace-nowrap px-4 py-2 text-right space-x-2">
                                         <a href="{{ route('organizations.show', $organization) }}" class="inline-block rounded bg-teal-600 px-4 py-2 text-xs font-medium text-white hover:bg-teal-700">
                                             Detalhes
                                         </a>
@@ -61,7 +61,6 @@
                         </table>
                     </div>
 
-                    <!-- ADICIONADO: Links da Paginação -->
                     <div class="mt-4">
                         {{ $organizations->links() }}
                     </div>

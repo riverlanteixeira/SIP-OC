@@ -5,32 +5,37 @@ namespace App\Http\Controllers;
 use App\Models\Investigation;
 use App\Models\Person;
 use App\Models\Organization;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests; // 1. Importa a Trait necessária
 
 class InvestigationController extends Controller
 {
+    use AuthorizesRequests; // 2. Usa a Trait, dando acesso ao método authorize()
+
     public function index()
     {
-        $investigations = Investigation::latest()->paginate(10);
+        // Se o utilizador for admin, mostra tudo.
+        // Senão, mostra apenas as investigações às quais ele está atribuído.
+        if (auth()->user()->hasRole('admin')) {
+            $investigations = Investigation::latest()->paginate(10);
+        } else {
+            $investigations = auth()->user()->assignedInvestigations()->latest()->paginate(10);
+        }
+        
         return view('investigations.index', compact('investigations'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     * CORREÇÃO: Agora este método também busca Pessoas e Organizações.
-     */
     public function create()
     {
         $people = Person::orderBy('full_name')->get();
         $organizations = Organization::orderBy('name')->get();
+        // Apenas utilizadores com o papel 'investigator' podem ser atribuídos
+        $investigators = User::whereHas('roles', fn($q) => $q->where('slug', 'investigator'))->get();
 
-        return view('investigations.create', compact('people', 'organizations'));
+        return view('investigations.create', compact('people', 'organizations', 'investigators'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     * CORREÇÃO: Agora este método também salva os vínculos.
-     */
     public function store(Request $request)
     {
         $validatedData = $request->validate([
@@ -38,13 +43,20 @@ class InvestigationController extends Controller
             'description' => 'nullable|string',
             'status' => 'required|string|in:Em Andamento,Concluída,Suspensa',
             'people' => 'nullable|array',
-            'organizations' => 'nullable|array'
+            'organizations' => 'nullable|array',
+            'users' => 'nullable|array'
         ]);
 
-        // Primeiro, cria a investigação
         $investigation = Investigation::create($validatedData);
 
-        // Depois, sincroniza os relacionamentos
+        // Atribui o próprio utilizador que criou o caso como responsável
+        $investigation->assignedUsers()->attach(auth()->user());
+
+        // Atribui outros utilizadores selecionados no formulário
+        if ($request->has('users')) {
+            $investigation->assignedUsers()->syncWithoutDetaching($request->input('users'));
+        }
+        
         $investigation->people()->sync($request->input('people', []));
         $investigation->organizations()->sync($request->input('organizations', []));
 
@@ -53,8 +65,10 @@ class InvestigationController extends Controller
 
     public function show(Investigation $investigation)
     {
-        $investigation->load('people.organizations', 'organizations.people');
+        // Usa a policy para verificar se o utilizador pode ver este caso
+        $this->authorize('view', $investigation);
 
+        $investigation->load('people.organizations', 'organizations.people');
         $nodes = [];
         $edges = [];
 
@@ -63,7 +77,6 @@ class InvestigationController extends Controller
         foreach ($investigation->people as $person) {
             $nodes[] = ['id' => 'p_'.$person->id, 'label' => $person->full_name, 'group' => 'person', 'shape' => 'ellipse', 'color' => '#5bc0de'];
             $edges[] = ['from' => 'inv_'.$investigation->id, 'to' => 'p_'.$person->id];
-
             foreach ($person->organizations as $org) {
                 if ($investigation->organizations->contains($org)) {
                     $edges[] = ['from' => 'p_'.$person->id, 'to' => 'org_'.$org->id, 'dashes' => true];
@@ -91,28 +104,40 @@ class InvestigationController extends Controller
 
     public function edit(Investigation $investigation)
     {
+        $this->authorize('update', $investigation);
+
         $people = Person::orderBy('full_name')->get();
         $organizations = Organization::orderBy('name')->get();
-        return view('investigations.edit', compact('investigation', 'people', 'organizations'));
+        $investigators = User::whereHas('roles', fn($q) => $q->where('slug', 'investigator'))->get();
+
+        return view('investigations.edit', compact('investigation', 'people', 'organizations', 'investigators'));
     }
 
     public function update(Request $request, Investigation $investigation)
     {
+        $this->authorize('update', $investigation);
+
         $validatedData = $request->validate([
             'case_name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'status' => 'required|string|in:Em Andamento,Concluída,Suspensa',
             'people' => 'nullable|array',
-            'organizations' => 'nullable|array'
+            'organizations' => 'nullable|array',
+            'users' => 'nullable|array'
         ]);
+
         $investigation->update($validatedData);
         $investigation->people()->sync($request->input('people', []));
         $investigation->organizations()->sync($request->input('organizations', []));
+        $investigation->assignedUsers()->sync($request->input('users', []));
+
         return redirect()->route('investigations.index')->with('success', 'Investigação atualizada com sucesso!');
     }
     
     public function destroy(Investigation $investigation)
     {
+        $this->authorize('delete', $investigation);
+
         $investigation->delete();
         return redirect()->route('investigations.index')->with('success', 'Investigação excluída com sucesso!');
     }

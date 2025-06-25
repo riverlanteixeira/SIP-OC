@@ -59,6 +59,28 @@
     </div>
 </div>
 
+<!-- NOVA SEÇÃO: Investigadores Responsáveis -->
+{{-- Só mostra esta secção se o utilizador for administrador --}}
+@can('is-admin')
+<div class="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
+    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+        Investigadores Responsáveis
+    </h3>
+    <div class="mt-4 space-y-2">
+        @forelse ($investigators as $investigator)
+            <label class="flex items-center">
+                <input type="checkbox" name="users[]" value="{{ $investigator->id }}"
+                    @if(isset($investigation) && $investigation->assignedUsers->contains($investigator->id)) checked @endif
+                    class="rounded dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-indigo-600 shadow-sm">
+                <span class="ms-2 text-sm text-gray-600 dark:text-gray-400">{{ $investigator->name }}</span>
+            </label>
+        @empty
+            <p class="text-sm text-gray-500 dark:text-gray-400">Nenhum utilizador com o papel "Investigador" encontrado.</p>
+        @endforelse
+    </div>
+</div>
+@endcan
+
 
 <!-- Botões -->
 <div class="flex items-center justify-end mt-4">

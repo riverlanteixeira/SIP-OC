@@ -13,7 +13,8 @@
 <!-- Data de Nascimento -->
 <div class="mt-4">
     <label for="birth_date" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Data de Nascimento</label>
-    <input id="birth_date" class="block mt-1 w-full rounded-md shadow-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300" type="date" name="birth_date" value="{{ old('birth_date', isset($person) ? $person->birth_date->format('Y-m-d') : '') }}" />
+    {{-- CORREÇÃO: Verifica se $person existe E se $person->birth_date não é nulo antes de chamar format() --}}
+    <input id="birth_date" class="block mt-1 w-full rounded-md shadow-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300" type="date" name="birth_date" value="{{ old('birth_date', (isset($person) && $person->birth_date) ? $person->birth_date->format('Y-m-d') : '') }}" />
 </div>
 
 <!-- Anotações -->
@@ -29,7 +30,6 @@
     <div class="mt-2 space-y-2">
         @foreach ($organizations as $organization)
             <label class="flex items-center">
-                {{-- AQUI ESTÁ A CORREÇÃO: type="checkbox" em vez de type-="checkbox" --}}
                 <input type="checkbox" name="organizations[]" value="{{ $organization->id }}"
                     @if(isset($person) && $person->organizations->contains($organization->id)) checked @endif
                     class="rounded dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:focus:ring-offset-gray-800">

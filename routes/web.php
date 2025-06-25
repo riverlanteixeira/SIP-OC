@@ -1,13 +1,14 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\OrganizationController; // Importa o nosso controller
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PersonController;
-use App\Http\Controllers\InvestigationController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\InvestigationController;
+use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\PersonController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,8 +47,11 @@ Route::middleware('auth')->group(function () {
     Route::resource('people', PersonController::class);
     Route::resource('investigations', InvestigationController::class); 
     Route::get('/search', [SearchController::class, 'index'])->name('search.index');
+    Route::resource('users', UserController::class)->only(['index', 'edit', 'update']);
+    Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');
+    Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
 });
 
-Route::resource('users', UserController::class)->only(['index', 'edit', 'update']);
+
 
 require __DIR__.'/auth.php';

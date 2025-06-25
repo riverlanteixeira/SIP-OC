@@ -56,4 +56,9 @@ class User extends Authenticatable
     {
         return $this->roles()->where('slug', $roleSlug)->exists();
     }
+
+    public function assignedInvestigations(): BelongsToMany
+    {
+        return $this->belongsToMany(Investigation::class, 'investigation_user');
+    }
 }

@@ -5,13 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany; // Adicionado
 
 class Person extends Model
 {
     use HasFactory;
 
     /**
-     * The attributes that are mass assignable.
+     * Os atributos que podem ser atribuídos em massa.
      */
     protected $fillable = [
         'full_name',
@@ -22,7 +23,7 @@ class Person extends Model
     ];
 
     /**
-     * The attributes that should be cast.
+     * Os atributos que devem ser convertidos para tipos nativos.
      */
     protected $casts = [
         'birth_date' => 'date',
@@ -30,15 +31,25 @@ class Person extends Model
 
     /**
      * Define o relacionamento muitos-para-muitos com Organizações.
-     * Uma pessoa pode pertencer a várias organizações.
      */
     public function organizations(): BelongsToMany
     {
         return $this->belongsToMany(Organization::class, 'organization_person');
     }
 
+    /**
+     * Define o relacionamento muitos-para-muitos com Investigações.
+     */
     public function investigations(): BelongsToMany
     {
         return $this->belongsToMany(Investigation::class, 'investigation_person');
+    }
+
+    /**
+     * Obtém todos os documentos para a pessoa.
+     */
+    public function documents(): MorphMany
+    {
+        return $this->morphMany(Document::class, 'documentable');
     }
 }
