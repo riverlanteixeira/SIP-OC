@@ -4,10 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany; // Adicionado
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
-class Investigation extends Model
+class Document extends Model
 {
     use HasFactory;
 
@@ -15,9 +14,10 @@ class Investigation extends Model
      * Os atributos que podem ser atribuídos em massa.
      */
     protected $fillable = [
-        'case_name',
-        'description',
-        'status',
+        'original_name',
+        'path',
+        'documentable_id',
+        'documentable_type',
     ];
 
     /**
@@ -47,8 +47,8 @@ class Investigation extends Model
     /**
      * Obtém todos os documentos para a investigação.
      */
-    public function documents(): MorphMany
+    public function documentable(): MorphTo
     {
-        return $this->morphMany(Document::class, 'documentable');
+        return $this->morphTo();
     }
 }

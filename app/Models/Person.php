@@ -5,14 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany; // Adicionado
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Person extends Model
 {
     use HasFactory;
 
     /**
-     * Os atributos que podem ser atribuídos em massa.
+     * The attributes that are mass assignable.
      */
     protected $fillable = [
         'full_name',
@@ -23,7 +23,7 @@ class Person extends Model
     ];
 
     /**
-     * Os atributos que devem ser convertidos para tipos nativos.
+     * The attributes that should be cast.
      */
     protected $casts = [
         'birth_date' => 'date',
