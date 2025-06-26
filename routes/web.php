@@ -9,6 +9,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuditLogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,24 +33,18 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // AQUI ESTÁ A NOSSA ROTA, NO LUGAR CERTO E COM TUDO QUE PRECISA
-    Route::resource('organizations', OrganizationController::class);
-});
-Route::middleware('auth')->group(function () {
-    // ... rotas do profile
     Route::resource('organizations', OrganizationController::class);
     Route::resource('people', PersonController::class); 
-});
 
-Route::middleware('auth')->group(function () {
-    // ... rotas existentes ...
-    Route::resource('organizations', OrganizationController::class);
-    Route::resource('people', PersonController::class);
+    // Rotas específicas devem vir antes das rotas de recurso genéricas
+    Route::get('/investigations/{investigation}/pdf', [InvestigationController::class, 'downloadPdf'])->name('investigations.pdf');
     Route::resource('investigations', InvestigationController::class); 
+
     Route::get('/search', [SearchController::class, 'index'])->name('search.index');
     Route::resource('users', UserController::class)->only(['index', 'edit', 'update']);
     Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');
     Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
+    Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
 });
 
 

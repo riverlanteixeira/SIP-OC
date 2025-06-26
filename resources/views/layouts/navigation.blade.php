@@ -30,6 +30,9 @@
                         <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
                             {{ __('Gestão de Utilizadores') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('audit-logs.index')" :active="request()->routeIs('audit-logs.*')">
+                            {{ __('Log de Auditoria') }}
+                        </x-nav-link>
                     @endcan
                 </div>
             </div>

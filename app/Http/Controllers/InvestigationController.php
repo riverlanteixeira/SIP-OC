@@ -7,138 +7,137 @@ use App\Models\Person;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests; // 1. Importa a Trait necessária
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class InvestigationController extends Controller
 {
-    use AuthorizesRequests; // 2. Usa a Trait, dando acesso ao método authorize()
+    use AuthorizesRequests;
 
-    public function index()
+    public function index(Request $request)
     {
-        // Se o utilizador for admin, mostra tudo.
-        // Senão, mostra apenas as investigações às quais ele está atribuído.
-        if (auth()->user()->hasRole('admin')) {
-            $investigations = Investigation::latest()->paginate(10);
-        } else {
-            $investigations = auth()->user()->assignedInvestigations()->latest()->paginate(10);
+        // Inicia a construção da query
+        $query = Investigation::query();
+
+        // Se o utilizador não for admin, filtra para mostrar apenas os seus casos
+        if (!auth()->user()->hasRole('admin')) {
+            $query->whereHas('assignedUsers', function ($q) {
+                $q->where('user_id', auth()->id());
+            });
         }
-        
-        return view('investigations.index', compact('investigations'));
+
+        // Se um filtro de status foi enviado, aplica-o à query
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Ordena pelos mais recentes e pagina os resultados
+        // withQueryString() garante que os filtros sejam mantidos na paginação
+        $investigations = $query->latest()->paginate(10)->withQueryString();
+
+        return view('investigations.index', [
+            'investigations' => $investigations,
+            'statuses' => ['Em Andamento', 'Concluída', 'Suspensa'], // Lista de status para o dropdown
+            'currentStatus' => $request->status ?? '' // Status atualmente selecionado
+        ]);
     }
 
     public function create()
     {
+        $this->authorize('create', Investigation::class);
         $people = Person::orderBy('full_name')->get();
         $organizations = Organization::orderBy('name')->get();
-        // Apenas utilizadores com o papel 'investigator' podem ser atribuídos
         $investigators = User::whereHas('roles', fn($q) => $q->where('slug', 'investigator'))->get();
-
         return view('investigations.create', compact('people', 'organizations', 'investigators'));
     }
 
     public function store(Request $request)
     {
+        $this->authorize('create', Investigation::class);
         $validatedData = $request->validate([
-            'case_name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'status' => 'required|string|in:Em Andamento,Concluída,Suspensa',
-            'people' => 'nullable|array',
-            'organizations' => 'nullable|array',
-            'users' => 'nullable|array'
+            'case_name' => 'required|string|max:255', 'description' => 'nullable|string', 'status' => 'required|string|in:Em Andamento,Concluída,Suspensa',
+            'people' => 'nullable|array', 'organizations' => 'nullable|array', 'users' => 'nullable|array'
         ]);
-
         $investigation = Investigation::create($validatedData);
-
-        // Atribui o próprio utilizador que criou o caso como responsável
-        $investigation->assignedUsers()->attach(auth()->user());
-
-        // Atribui outros utilizadores selecionados no formulário
-        if ($request->has('users')) {
-            $investigation->assignedUsers()->syncWithoutDetaching($request->input('users'));
-        }
-        
+        $assignedUsers = $request->input('users', []);
+        $assignedUsers[] = auth()->id();
+        $investigation->assignedUsers()->sync(array_unique($assignedUsers));
         $investigation->people()->sync($request->input('people', []));
         $investigation->organizations()->sync($request->input('organizations', []));
-
         return redirect()->route('investigations.index')->with('success', 'Investigação iniciada com sucesso!');
     }
 
     public function show(Investigation $investigation)
     {
-        // Usa a policy para verificar se o utilizador pode ver este caso
         $this->authorize('view', $investigation);
-
-        $investigation->load('people.organizations', 'organizations.people');
-        $nodes = [];
-        $edges = [];
-
-        $nodes[] = ['id' => 'inv_'.$investigation->id, 'label' => $investigation->case_name, 'group' => 'investigation', 'shape' => 'box', 'color' => '#f0ad4e'];
-
+        $investigation->load('people.organizations', 'organizations.people', 'documents', 'assignedUsers');
+        $nodes = []; $edges = []; $addedNodeIds = [];
+        $nodeId = 'inv_'.$investigation->id;
+        $nodes[] = ['id' => $nodeId, 'label' => $investigation->case_name, 'group' => 'investigation', 'shape' => 'box', 'color' => '#f0ad4e'];
+        $addedNodeIds[$nodeId] = true;
         foreach ($investigation->people as $person) {
-            $nodes[] = ['id' => 'p_'.$person->id, 'label' => $person->full_name, 'group' => 'person', 'shape' => 'ellipse', 'color' => '#5bc0de'];
-            $edges[] = ['from' => 'inv_'.$investigation->id, 'to' => 'p_'.$person->id];
+            $nodeId = 'p_'.$person->id;
+            if (!isset($addedNodeIds[$nodeId])) {
+                $nodes[] = ['id' => $nodeId, 'label' => $person->full_name, 'group' => 'person', 'shape' => 'ellipse', 'color' => '#5bc0de'];
+                $addedNodeIds[$nodeId] = true;
+            }
+            $edges[] = ['from' => 'inv_'.$investigation->id, 'to' => $nodeId];
             foreach ($person->organizations as $org) {
                 if ($investigation->organizations->contains($org)) {
-                    $edges[] = ['from' => 'p_'.$person->id, 'to' => 'org_'.$org->id, 'dashes' => true];
+                    $edges[] = ['from' => $nodeId, 'to' => 'org_'.$org->id, 'dashes' => true];
                 }
             }
         }
-
         foreach ($investigation->organizations as $organization) {
-            if (!collect($nodes)->contains('id', 'org_'.$organization->id)) {
-                $nodes[] = ['id' => 'org_'.$organization->id, 'label' => $organization->name, 'group' => 'organization', 'shape' => 'dot', 'color' => '#d9534f', 'size' => 20];
+            $nodeId = 'org_'.$organization->id;
+            if (!isset($addedNodeIds[$nodeId])) {
+                $nodes[] = ['id' => $nodeId, 'label' => $organization->name, 'group' => 'organization', 'shape' => 'dot', 'color' => '#d9534f', 'size' => 20];
+                $addedNodeIds[$nodeId] = true;
             }
-            $edges[] = ['from' => 'inv_'.$investigation->id, 'to' => 'org_'.$organization->id];
+            $edges[] = ['from' => 'inv_'.$investigation->id, 'to' => $nodeId];
         }
-
         $edges = array_unique($edges, SORT_REGULAR);
-
         return view('investigations.show', [
             'investigation' => $investigation,
-            'graphData' => [
-                'nodes' => array_values($nodes),
-                'edges' => array_values($edges),
-            ]
+            'graphData' => ['nodes' => $nodes, 'edges' => $edges]
         ]);
     }
 
     public function edit(Investigation $investigation)
     {
         $this->authorize('update', $investigation);
-
         $people = Person::orderBy('full_name')->get();
         $organizations = Organization::orderBy('name')->get();
         $investigators = User::whereHas('roles', fn($q) => $q->where('slug', 'investigator'))->get();
-
         return view('investigations.edit', compact('investigation', 'people', 'organizations', 'investigators'));
     }
 
     public function update(Request $request, Investigation $investigation)
     {
         $this->authorize('update', $investigation);
-
         $validatedData = $request->validate([
-            'case_name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'status' => 'required|string|in:Em Andamento,Concluída,Suspensa',
-            'people' => 'nullable|array',
-            'organizations' => 'nullable|array',
-            'users' => 'nullable|array'
+            'case_name' => 'required|string|max:255', 'description' => 'nullable|string', 'status' => 'required|string|in:Em Andamento,Concluída,Suspensa',
+            'people' => 'nullable|array', 'organizations' => 'nullable|array', 'users' => 'nullable|array'
         ]);
-
         $investigation->update($validatedData);
         $investigation->people()->sync($request->input('people', []));
         $investigation->organizations()->sync($request->input('organizations', []));
         $investigation->assignedUsers()->sync($request->input('users', []));
-
         return redirect()->route('investigations.index')->with('success', 'Investigação atualizada com sucesso!');
     }
     
     public function destroy(Investigation $investigation)
     {
         $this->authorize('delete', $investigation);
-
         $investigation->delete();
         return redirect()->route('investigations.index')->with('success', 'Investigação excluída com sucesso!');
+    }
+
+    public function downloadPdf(Investigation $investigation)
+    {
+        $this->authorize('view', $investigation);
+        $investigation->load('people', 'organizations', 'documents', 'assignedUsers');
+        $pdf = Pdf::loadView('investigations.pdf', compact('investigation'));
+        return $pdf->download('relatorio-investigacao-'.$investigation->id.'.pdf');
     }
 }

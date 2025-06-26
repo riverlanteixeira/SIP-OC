@@ -4,9 +4,14 @@
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                 {{ __('Detalhes da Investigação') }}
             </h2>
-            <a href="{{ route('investigations.edit', $investigation->id) }}" class="inline-block rounded bg-indigo-600 px-4 py-2 text-xs font-medium text-white hover:bg-indigo-700">
-                Editar/Gerenciar Vínculos
-            </a>
+            <div class="flex items-center space-x-2">
+                <a href="{{ route('investigations.pdf', $investigation->id) }}" target="_blank" class="inline-block rounded bg-green-600 px-4 py-2 text-xs font-medium text-white hover:bg-green-700">
+                    Gerar Relatório PDF
+                </a>
+                <a href="{{ route('investigations.edit', $investigation->id) }}" class="inline-block rounded bg-indigo-600 px-4 py-2 text-xs font-medium text-white hover:bg-indigo-700">
+                    Editar/Gerenciar Vínculos
+                </a>
+            </div>
         </div>
     </x-slot>
 
@@ -37,6 +42,7 @@
                 </div>
             </div>
 
+            <!-- ... (Cartões de Detalhes, Pessoas, Organizações, etc., como antes) ... -->
             <!-- Detalhes do Caso, Pessoas e Organizações -->
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
@@ -82,7 +88,7 @@
                 </div>
             </div>
             
-            <!-- NOVA SEÇÃO: Documentos e Evidências -->
+            <!-- Documentos e Evidências -->
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Documentos e Evidências</h3>
@@ -92,12 +98,10 @@
                         @csrf
                         <input type="hidden" name="documentable_id" value="{{ $investigation->id }}">
                         <input type="hidden" name="documentable_type" value="Investigation">
-
                         <div>
                             <label for="document" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Anexar Novo Documento</label>
                             <input id="document" name="document" type="file" class="block w-full mt-1 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100" required>
                         </div>
-
                         <div class="mt-4">
                             <button type="submit" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-500 active:bg-blue-700 focus:outline-none focus:border-blue-700 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
                                 Enviar
@@ -125,7 +129,6 @@
                             @endforelse
                         </ul>
                     </div>
-
                 </div>
             </div>
 
@@ -133,61 +136,24 @@
     </div>
 
     @push('scripts')
-        <!-- Importar a biblioteca vis.js a partir de um CDN -->
         <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
-        
         <script type="text/javascript">
-            // Adiciona uma verificação para garantir que a variável $graphData existe e tem conteúdo.
             @if (isset($graphData) && count($graphData['nodes']) > 0)
-                // Passar os dados do PHP (Laravel) para o JavaScript
                 const graphData = {!! json_encode($graphData) !!};
-
-                // Criar os nós e arestas para o vis.js
                 const nodes = new vis.DataSet(graphData.nodes);
                 const edges = new vis.DataSet(graphData.edges);
-
-                // Container onde o gráfico será desenhado
                 const container = document.getElementById('relationshipGraph');
-
-                // Dados para o gráfico
-                const data = {
-                    nodes: nodes,
-                    edges: edges,
-                };
-
-                // Opções de configuração do gráfico
+                const data = { nodes: nodes, edges: edges, };
                 const options = {
-                    layout: {
-                        improvedLayout: true,
-                    },
-                    interaction: {
-                        dragNodes: true,
-                        dragView: true,
-                        zoomView: true,
-                        hover: true
-                    },
+                    layout: { improvedLayout: true },
+                    interaction: { dragNodes: true, dragView: true, zoomView: true, hover: true },
                     physics: {
-                        enabled: true,
-                        solver: 'forceAtlas2Based',
-                        forceAtlas2Based: {
-                          gravitationalConstant: -50,
-                          centralGravity: 0.01,
-                          springLength: 200,
-                          springConstant: 0.08,
-                          avoidOverlap: 0.5
-                        },
-                        stabilization: {
-                            iterations: 1000,
-                            fit: true,
-                            updateInterval: 25
-                        }
+                        enabled: true, solver: 'forceAtlas2Based',
+                        forceAtlas2Based: { gravitationalConstant: -50, centralGravity: 0.01, springLength: 200, springConstant: 0.08, avoidOverlap: 0.5 },
+                        stabilization: { iterations: 1000, fit: true, updateInterval: 25 }
                     }
                 };
-
-                // Inicializar o gráfico
                 const network = new vis.Network(container, data, options);
-
-                // Adiciona um "ouvinte" que desliga a física após a estabilização
                 network.on("stabilizationIterationsDone", function () {
                     network.setOptions( { physics: false } );
                 });
