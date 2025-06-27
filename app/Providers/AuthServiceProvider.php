@@ -2,8 +2,12 @@
 
 namespace App\Providers;
 
-use App\Models\User; // Adicionado
-use Illuminate\Support\Facades\Gate; // Adicionado
+use App\Models\User;
+use App\Models\Investigation;
+use App\Models\Person; // Adicionado
+use App\Policies\InvestigationPolicy;
+use App\Policies\PersonPolicy; // Adicionado
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
@@ -14,7 +18,8 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
-        //
+        Investigation::class => InvestigationPolicy::class,
+        Person::class => PersonPolicy::class, // Linha adicionada para registar a nova policy
     ];
 
     /**
@@ -22,8 +27,6 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Define um "gate" chamado 'is-admin'
-        // Ele retorna true se o utilizador tiver o papel com o slug 'admin'
         Gate::define('is-admin', function (User $user) {
             return $user->hasRole('admin');
         });

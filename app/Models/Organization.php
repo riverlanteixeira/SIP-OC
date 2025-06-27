@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\Traits\Auditable; // Importa a Trait
+use App\Models\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 class Organization extends Model
 {
     use HasFactory, Auditable;
-    use HasFactory;
 
     /**
      * Os atributos que podem ser atribuídos em massa.
@@ -23,13 +22,15 @@ class Organization extends Model
     ];
 
     /**
-     * Define o relacionamento muitos-para-muitos com Pessoas.
+     * Define o relacionamento com Pessoas, incluindo o dado extra da tabela-pivô.
      */
     public function people(): BelongsToMany
     {
-        return $this->belongsToMany(Person::class, 'organization_person');
+        // CORREÇÃO: Removido o ->withTimestamps() para consistência.
+        return $this->belongsToMany(Person::class, 'organization_person')
+                   ->withPivot('role');
     }
-
+    
     /**
      * Define o relacionamento muitos-para-muitos com Investigações.
      */

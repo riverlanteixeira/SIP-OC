@@ -2,19 +2,22 @@
 
 namespace App\Models;
 
-use App\Models\Traits\Auditable; // Importa a Trait
+use App\Models\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+
 
 class Person extends Model
 {
-    use HasFactory, Auditable;
-    use HasFactory;
+    use HasFactory, Traits\Auditable;
 
     /**
      * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
      */
     protected $fillable = [
         'full_name',
@@ -22,21 +25,43 @@ class Person extends Model
         'birth_date',
         'notes',
         'photo_path',
+        'rg',
+        'nickname',
+        'father_name',
+        'mother_name',
+        'nationality',
+        'birth_place',
+        'gender',
+        'skin_color',
     ];
 
     /**
      * The attributes that should be cast.
+     *
+     * @var array<string, string>
      */
     protected $casts = [
         'birth_date' => 'date',
     ];
 
+    public function contacts(): HasMany
+    {
+        return $this->hasMany(Contact::class);
+    }
+
+    public function incarcerations(): HasMany
+    {
+        return $this->hasMany(Incarceration::class)->orderBy('entry_date', 'desc');
+    }
+
     /**
-     * Define o relacionamento muitos-para-muitos com Organizações.
+     * Define o relacionamento com Organizações, incluindo o dado extra da tabela-pivô.
      */
     public function organizations(): BelongsToMany
     {
-        return $this->belongsToMany(Organization::class, 'organization_person');
+        // CORREÇÃO: Removido o ->withTimestamps() pois a tabela pivô não tem essas colunas.
+        return $this->belongsToMany(Organization::class, 'organization_person')
+                    ->withPivot('role');
     }
 
     /**
@@ -53,5 +78,13 @@ class Person extends Model
     public function documents(): MorphMany
     {
         return $this->morphMany(Document::class, 'documentable');
+    }
+
+    /**
+     * Obtém todas as tatuagens para a pessoa.
+     */
+    public function tattoos(): HasMany
+    {
+        return $this->hasMany(Tattoo::class);
     }
 }
