@@ -25,6 +25,10 @@
                         {{ __('Investigações') }}
                     </x-nav-link>
 
+                    <x-nav-link :href="route('locations.index')" :active="request()->routeIs('locations.*')">
+        {{ __('Locais') }}
+    </x-nav-link>
+
                     {{-- Este link só aparece se o utilizador passar no gate 'is-admin' --}}
                     @can('is-admin')
                         <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">

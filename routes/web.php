@@ -13,6 +13,7 @@ use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\TattooController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\IncarcerationController;
+use App\Http\Controllers\LocationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -44,7 +45,7 @@ Route::middleware('auth')->group(function () {
     // Rotas específicas devem vir antes das rotas de recurso genéricas
     Route::get('/investigations/{investigation}/pdf', [InvestigationController::class, 'downloadPdf'])->name('investigations.pdf');
     Route::resource('investigations', InvestigationController::class);
-
+    Route::resource('locations', LocationController::class);
     Route::get('/search', [SearchController::class, 'index'])->name('search.index');
     Route::resource('users', UserController::class)->only(['index', 'edit', 'update']);
     Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');
