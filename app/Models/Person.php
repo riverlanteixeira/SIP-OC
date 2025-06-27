@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 
+
+
 class Person extends Model
 {
     use HasFactory, Traits\Auditable;
@@ -87,4 +89,9 @@ class Person extends Model
     {
         return $this->hasMany(Tattoo::class);
     }
+    public function bankAccounts(): BelongsToMany
+    {
+        return $this->belongsToMany(BankAccount::class, 'bank_account_person');
+    }
+    
 }

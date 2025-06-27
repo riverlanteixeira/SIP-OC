@@ -86,7 +86,7 @@ class PersonController extends Controller
     public function edit(Person $person)
     {
         $organizations = Organization::orderBy('name')->get();
-        $person->load('organizations', 'tattoos', 'contacts', 'incarcerations');
+        $person->load('organizations', 'tattoos', 'contacts', 'incarcerations', 'bankAccounts');
 
         // Define as listas de funções hierárquicas
         $pgcRoles = ['Conselho Geral', 'Disciplina Geral', 'Financeiro Geral', 'Disciplina Regional', 'Disciplina Prisional', 'Responsável Local (Sintonia)', 'Base (Integrante Operacional)', 'Simpatizante/Colaborador'];

@@ -29,6 +29,14 @@
         {{ __('Locais') }}
     </x-nav-link>
 
+    <x-nav-link :href="route('vehicles.index')" :active="request()->routeIs('vehicles.*')">
+        {{ __('Veículos') }}
+    </x-nav-link>
+
+    <x-nav-link :href="route('bank-accounts.index')" :active="request()->routeIs('bank-accounts.*')">
+        {{ __('Contas Bancárias') }}
+    </x-nav-link>
+
                     {{-- Este link só aparece se o utilizador passar no gate 'is-admin' --}}
                     @can('is-admin')
                         <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">

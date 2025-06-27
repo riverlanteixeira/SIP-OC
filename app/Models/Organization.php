@@ -46,4 +46,8 @@ class Organization extends Model
     {
         return $this->morphMany(Document::class, 'documentable');
     }
+    public function bankAccounts(): MorphMany
+    {
+        return $this->morphMany(BankAccount::class, 'ownerable');
+    }
 }

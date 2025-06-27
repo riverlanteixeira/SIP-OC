@@ -14,6 +14,8 @@ use App\Http\Controllers\TattooController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\IncarcerationController;
 use App\Http\Controllers\LocationController;
+use App\Http\Controllers\VehicleController;
+use App\Http\Controllers\BankAccountController;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,6 +48,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/investigations/{investigation}/pdf', [InvestigationController::class, 'downloadPdf'])->name('investigations.pdf');
     Route::resource('investigations', InvestigationController::class);
     Route::resource('locations', LocationController::class);
+    Route::resource('vehicles', VehicleController::class);
     Route::get('/search', [SearchController::class, 'index'])->name('search.index');
     Route::resource('users', UserController::class)->only(['index', 'edit', 'update']);
     Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');
@@ -55,6 +58,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/contacts/{contact}', [ContactController::class, 'destroy'])->name('contacts.destroy');
     Route::post('/incarcerations', [IncarcerationController::class, 'store'])->name('incarcerations.store');
     Route::delete('/incarcerations/{incarceration}', [IncarcerationController::class, 'destroy'])->name('incarcerations.destroy');
+    Route::resource('bank-accounts', BankAccountController::class);
 });
 
 
