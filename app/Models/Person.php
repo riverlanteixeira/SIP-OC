@@ -93,5 +93,11 @@ class Person extends Model
     {
         return $this->belongsToMany(BankAccount::class, 'bank_account_person');
     }
+    public function occurrences(): BelongsToMany
+    {
+        return $this->belongsToMany(Occurrence::class, 'occurrence_person')
+                    ->withPivot('participation_type', 'individual_report')
+                    ->withTimestamps();
+    }
     
 }

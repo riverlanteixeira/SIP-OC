@@ -16,6 +16,13 @@ use App\Http\Controllers\IncarcerationController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\BankAccountController;
+use App\Http\Controllers\CryptoWalletController;
+use App\Http\Controllers\OccurrenceController;
+use App\Http\Controllers\InvolvedPersonController;
+use App\Http\Controllers\OccurrenceCrimeTypeController;
+use App\Http\Controllers\OccurrenceVehicleController;
+use App\Http\Controllers\OccurrenceBankAccountController;
+use App\Http\Controllers\OccurrenceCryptoWalletController;
 
 /*
 |--------------------------------------------------------------------------
@@ -59,6 +66,23 @@ Route::middleware('auth')->group(function () {
     Route::post('/incarcerations', [IncarcerationController::class, 'store'])->name('incarcerations.store');
     Route::delete('/incarcerations/{incarceration}', [IncarcerationController::class, 'destroy'])->name('incarcerations.destroy');
     Route::resource('bank-accounts', BankAccountController::class);
+    Route::resource('crypto-wallets', CryptoWalletController::class);
+    Route::resource('occurrences', OccurrenceController::class);
+    Route::post('/occurrences/people', [InvolvedPersonController::class, 'store'])->name('occurrences.people.store');
+    Route::delete('/occurrences/people/{occurrence}/{person}', [InvolvedPersonController::class, 'destroy'])->name('occurrences.people.destroy');
+    Route::post('/occurrences/crime-types', [OccurrenceCrimeTypeController::class, 'store'])->name('occurrences.crime-types.store');
+    Route::delete('/occurrences/crime-types/{occurrence}/{crimeType}', [OccurrenceCrimeTypeController::class, 'destroy'])->name('occurrences.crime-types.destroy');
+    Route::resource('locations', LocationController::class);
+    Route::resource('vehicles', VehicleController::class);
+    Route::post('/occurrences/vehicles', [OccurrenceVehicleController::class, 'store'])->name('occurrences.vehicles.store');
+    Route::delete('/occurrences/vehicles/{occurrence}/{vehicle}', [OccurrenceVehicleController::class, 'destroy'])->name('occurrences.vehicles.destroy');
+    Route::post('/occurrences/vehicles', [OccurrenceVehicleController::class, 'store'])->name('occurrences.vehicles.store');
+    Route::delete('/occurrences/vehicles/{occurrence}/{vehicle}', [OccurrenceVehicleController::class, 'destroy'])->name('occurrences.vehicles.destroy');
+    Route::post('/occurrences/bank-accounts', [OccurrenceBankAccountController::class, 'store'])->name('occurrences.bank-accounts.store');
+    Route::delete('/occurrences/bank-accounts/{occurrence}/{bankAccount}', [OccurrenceBankAccountController::class, 'destroy'])->name('occurrences.bank-accounts.destroy');
+
+    Route::post('/occurrences/crypto-wallets', [OccurrenceCryptoWalletController::class, 'store'])->name('occurrences.crypto-wallets.store');
+    Route::delete('/occurrences/crypto-wallets/{occurrence}/{cryptoWallet}', [OccurrenceCryptoWalletController::class, 'destroy'])->name('occurrences.crypto-wallets.destroy');
 });
 
 

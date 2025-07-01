@@ -5,20 +5,26 @@ namespace App\Policies;
 use App\Models\Person;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
+use Illuminate\Support\Facades\Log; // 1. Importa a classe de Log
 
 class PersonPolicy
 {
     /**
      * Executa verificações de pré-autorização.
-     * Se o utilizador for admin, permite qualquer ação imediatamente.
      */
     public function before(User $user, string $ability): bool|null
     {
+        // 2. Escreve no log para sabermos que este método foi chamado
+        Log::info("PersonPolicy@before: Verificando permissão '{$ability}' para o utilizador ID {$user->id}.");
+
         if ($user->hasRole('admin')) {
+            // 3. Escreve no log se o utilizador é admin
+            Log::info("PersonPolicy@before: Utilizador é ADMIN. Permissão concedida.");
             return true;
         }
 
-        return null; // Deixa os outros métodos da policy decidirem.
+        Log::info("PersonPolicy@before: Utilizador não é admin. A continuar para a verificação específica.");
+        return null;
     }
 
     /**
@@ -50,10 +56,15 @@ class PersonPolicy
      */
     public function update(User $user, Person $person): bool
     {
-        // Permite se o utilizador for um investigador.
-        // Numa fase posterior, poderíamos adicionar uma regra mais complexa,
-        // como verificar se eles partilham uma investigação.
-        return $user->hasRole('investigator');
+        // 4. Escreve no log para sabermos que este método foi chamado
+        Log::info("PersonPolicy@update: Verificando permissão para o utilizador ID {$user->id}.");
+        
+        $isAllowed = $user->hasRole('admin') || $user->hasRole('investigator');
+        
+        // 5. Escreve o resultado da verificação no log
+        Log::info("PersonPolicy@update: Permissão para atualizar é " . ($isAllowed ? 'true' : 'false'));
+
+        return $isAllowed;
     }
 
     /**
@@ -61,8 +72,6 @@ class PersonPolicy
      */
     public function delete(User $user, Person $person): bool
     {
-        // Apenas um admin pode apagar (verificado no método 'before').
-        // Um investigador não pode.
         return false;
     }
 }

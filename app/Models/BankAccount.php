@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class BankAccount extends Model
 {
-    use HasFactory, Auditable;
+    use HasFactory, Traits\Auditable;
 
     protected $fillable = [
         'bank_name',
@@ -24,5 +24,9 @@ class BankAccount extends Model
     public function people(): BelongsToMany
     {
         return $this->belongsToMany(Person::class, 'bank_account_person');
+    }
+    public function occurrences(): BelongsToMany
+    {
+        return $this->belongsToMany(Occurrence::class, 'bank_account_occurrence');
     }
 }

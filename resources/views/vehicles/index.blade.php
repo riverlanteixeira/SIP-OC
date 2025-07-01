@@ -17,20 +17,20 @@
                         <table class="min-w-full divide-y-2 divide-gray-200 dark:divide-gray-700 text-sm">
                             <thead class="text-left">
                                 <tr>
-                                    <th class="whitespace-nowrap px-4 py-2 font-medium">Placa</th>
-                                    <th class="whitespace-nowrap px-4 py-2 font-medium">Marca/Modelo</th>
-                                    <th class="whitespace-nowrap px-4 py-2 font-medium">Ano</th>
-                                    <th class="whitespace-nowrap px-4 py-2 font-medium">Cor</th>
+                                    <th class="whitespace-nowrap px-4 py-2 font-medium text-gray-900 dark:text-white">Placa</th>
+                                    <th class="whitespace-nowrap px-4 py-2 font-medium text-gray-900 dark:text-white">Marca/Modelo</th>
+                                    <th class="whitespace-nowrap px-4 py-2 font-medium text-gray-900 dark:text-white">Ano</th>
+                                    <th class="whitespace-nowrap px-4 py-2 font-medium text-gray-900 dark:text-white">Cor</th>
                                     <th class="px-4 py-2"></th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                                 @forelse ($vehicles as $vehicle)
                                 <tr>
-                                    <td class="whitespace-nowrap px-4 py-2 font-medium">{{ $vehicle->plate }}</td>
-                                    <td class="whitespace-nowrap px-4 py-2">{{ $vehicle->brand }} / {{ $vehicle->model }}</td>
-                                    <td class="whitespace-nowrap px-4 py-2">{{ $vehicle->year }}</td>
-                                    <td class="whitespace-nowrap px-4 py-2">{{ $vehicle->color }}</td>
+                                    <td class="whitespace-nowrap px-4 py-2 font-medium text-gray-900 dark:text-white">{{ $vehicle->plate }}</td>
+                                    <td class="whitespace-nowrap px-4 py-2 text-gray-700 dark:text-gray-200">{{ $vehicle->brand }} / {{ $vehicle->model }}</td>
+                                    <td class="whitespace-nowrap px-4 py-2 text-gray-700 dark:text-gray-200">{{ $vehicle->year }}</td>
+                                    <td class="whitespace-nowrap px-4 py-2 text-gray-700 dark:text-gray-200">{{ $vehicle->color }}</td>
                                     <td class="whitespace-nowrap px-4 py-2 text-right space-x-2">
                                         <a href="{{ route('vehicles.edit', $vehicle) }}" class="inline-block rounded bg-indigo-600 px-4 py-2 text-xs font-medium text-white hover:bg-indigo-700">
                                             Editar
@@ -46,7 +46,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="5" class="text-center py-4">Nenhum veículo cadastrado.</td>
+                                    <td colspan="5" class="text-center py-4 text-gray-500 dark:text-gray-400">Nenhum veículo cadastrado.</td>
                                 </tr>
                                 @endforelse
                             </tbody>

@@ -7,17 +7,26 @@ use Illuminate\Http\Request;
 
 class VehicleController extends Controller
 {
+    /**
+     * Exibe a lista de veículos.
+     */
     public function index()
     {
         $vehicles = Vehicle::latest()->paginate(15);
         return view('vehicles.index', compact('vehicles'));
     }
 
+    /**
+     * Mostra o formulário para criar um novo veículo.
+     */
     public function create()
     {
         return view('vehicles.create');
     }
 
+    /**
+     * Guarda um novo veículo na base de dados.
+     */
     public function store(Request $request)
     {
         $validatedData = $request->validate([
@@ -37,11 +46,17 @@ class VehicleController extends Controller
         return redirect()->route('vehicles.index')->with('success', 'Veículo cadastrado com sucesso.');
     }
 
+    /**
+     * Mostra o formulário para editar um veículo existente.
+     */
     public function edit(Vehicle $vehicle)
     {
         return view('vehicles.edit', compact('vehicle'));
     }
 
+    /**
+     * Atualiza um veículo existente na base de dados.
+     */
     public function update(Request $request, Vehicle $vehicle)
     {
         $validatedData = $request->validate([
@@ -61,6 +76,9 @@ class VehicleController extends Controller
         return redirect()->route('vehicles.index')->with('success', 'Veículo atualizado com sucesso.');
     }
 
+    /**
+     * Remove um veículo da base de dados.
+     */
     public function destroy(Vehicle $vehicle)
     {
         $vehicle->delete();
